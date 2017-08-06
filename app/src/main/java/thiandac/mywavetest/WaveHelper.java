@@ -51,7 +51,7 @@ public class WaveHelper {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_MOVE:
                         initAnimation(0f, 1f, 1000, levelRatioB, levelRatioA, 1000, 0.0001f, 0.025f, 5000);
-                        mSelectionListener.onSelectionUpdate(mValue, mMaxVal, mMinVal, waveView);
+                        //mSelectionListener.onSelectionUpdate(mValue, mMaxVal, mMinVal, waveView);
                         mAnimatorSet.start();
                         break;
                     case MotionEvent.ACTION_UP:
