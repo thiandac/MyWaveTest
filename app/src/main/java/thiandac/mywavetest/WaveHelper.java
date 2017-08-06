@@ -8,28 +8,38 @@ import android.app.Activity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WaveHelper{
+public class WaveHelper {
+    /** minimum value the bar can display */
+    float mMinVal = 0f;
+
+    /** maximum value the bar can display */
+    float mMaxVal = 100f;
+    ValueBarSelectionListener mSelectionListener;
+    /** the value the bar currently displays */
+    float mValue = 75f;
     private WaveView mWaveView;
     private AnimatorSet mAnimatorSet;
     float endY;
-    float levelRatioB = 0.1f;
+    float levelRatioB;
     float levelRatioA;
     float water;
     Callbacks activity;
     public WaveHelper(final WaveView waveView) {
         mWaveView = waveView;
-        initAnimation(0f, 1f, 1000, levelRatioB, levelRatioB, 1000, 0.0001f, 0.0001f, 5000);
+//        initAnimation(0f, 1f, 1000, levelRatioB, levelRatioB, 1000, 0.0001f, 0.0001f, 5000);
         waveView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 water = mWaveView.getWaterLevelRatio();
-                activity.updateClient(water);// xài interface nè
+
+                activity.updateClient(water,v);
                 endY = mWaveView.getHeight() - event.getY();
                 levelRatioA = endY / mWaveView.getHeight();
                 if (levelRatioA <= 0f) {
@@ -41,14 +51,15 @@ public class WaveHelper{
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_MOVE:
                         initAnimation(0f, 1f, 1000, levelRatioB, levelRatioA, 1000, 0.0001f, 0.025f, 5000);
+                        mSelectionListener.onSelectionUpdate(mValue, mMaxVal, mMinVal, waveView);
                         mAnimatorSet.start();
                         break;
                     case MotionEvent.ACTION_UP:
                         break;
                 }//需要改動：如果動畫沒完又移動，動畫不要重新播放
                 levelRatioB = levelRatioA;
-                /*Log.d("what_helper", levelRatioA + "");
-                Log.d("what_wave", water + "");*/
+                Log.d("what_helper", levelRatioA + "");
+                Log.d("what_wave", water + "");
                 return true;
             }
         });
@@ -66,32 +77,7 @@ public class WaveHelper{
         this.activity = (Callbacks)activity;
     }
 
-    /*
-        private void initAnimWave(float waveMin, float waveMax, long waveTime) {
-            ObjectAnimator waveShiftAnim = ObjectAnimator.ofFloat(mWaveView, "waveShiftRatio", waveMin ,waveMax);
-            waveShiftAnim.setRepeatCount(ValueAnimator.INFINITE);
-            waveShiftAnim.setDuration(waveTime);
-            waveShiftAnim.setInterpolator(new LinearInterpolator());
-            animators.add(waveShiftAnim);
-        }
-
-        private void initAnimLevel(float levelMin, float levelMax, long levelTime) {
-            ObjectAnimator waterLevelAnim = ObjectAnimator.ofFloat(mWaveView, "waterLevelRatio", levelMin, levelMax);
-            waterLevelAnim.setDuration(levelTime);
-            waterLevelAnim.setInterpolator(new DecelerateInterpolator());
-            animators.add(waterLevelAnim);
-        }
-
-        private void initAnimAmp(float ampMin, float ampMax, long ampTime) {
-            ObjectAnimator amplitudeAnim = ObjectAnimator.ofFloat(mWaveView, "amplitudeRatio", ampMin, ampMax);
-            amplitudeAnim.setRepeatCount(1);
-            amplitudeAnim.setRepeatMode(ValueAnimator.REVERSE);
-            amplitudeAnim.setDuration(ampTime);//default:5000
-            amplitudeAnim.setInterpolator(new LinearInterpolator());
-            animators.add(amplitudeAnim);
-        }
-    */
-    private void initAnimation(float waveMin, float waveMax, long waveTime, float levelMin, float levelMax, long levelTime, float ampMin, float ampMax, long ampTime) {
+    public void initAnimation(float waveMin, float waveMax, long waveTime, float levelMin, float levelMax, long levelTime, float ampMin, float ampMax, long ampTime) {
         List<Animator> animators = new ArrayList<>();
 
         // horizontal animation.
@@ -129,7 +115,4 @@ public class WaveHelper{
         }
     }
 
-    public float getLevelRatioA() {
-        return levelRatioA;
-    }
 }

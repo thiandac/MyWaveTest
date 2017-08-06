@@ -38,7 +38,7 @@ public class WaveView extends View {
     public static final int DEFAULT_BEHIND_WAVE_COLOR = Color.parseColor("#28FFFFFF");
     public static final int DEFAULT_FRONT_WAVE_COLOR = Color.parseColor("#3CFFFFFF");
     public static final ShapeType DEFAULT_WAVE_SHAPE = ShapeType.CIRCLE;
-
+    BarColorFormatter mColorFormatter;
     public enum ShapeType {
         CIRCLE,
         SQUARE
@@ -88,6 +88,21 @@ public class WaveView extends View {
         mShaderMatrix = new Matrix();
         mViewPaint = new Paint();
         mViewPaint.setAntiAlias(true);
+        mColorFormatter = new DefaultColorFormatter(Color.rgb(39, 140, 230));
+    }
+
+    private class DefaultColorFormatter implements BarColorFormatter {
+
+        private int mColor;
+
+        public DefaultColorFormatter(int color) {
+            mColor = color;
+        }
+
+        @Override
+        public int getColor(float value, float maxVal, float minVal) {
+            return mColor;
+        }
     }
 
     public float getWaveShiftRatio() {
@@ -175,15 +190,17 @@ public class WaveView extends View {
         invalidate();
     }
 
-    public void setWaveColor(int behindWaveColor, int frontWaveColor) {
-        mBehindWaveColor = behindWaveColor;
-        mFrontWaveColor = frontWaveColor;
-
+    public void setWaveColor(BarColorFormatter frontFormatter, int behindFormatter) {
+        mBehindWaveColor = behindFormatter;
         if (getWidth() > 0 && getHeight() > 0) {
             // need to recreate shader when color changed
             mWaveShader = null;
             createShader();
             invalidate();
+        }
+        if (frontFormatter == null) {
+            frontFormatter = new DefaultColorFormatter(Color.rgb(39, 140, 230));
+            mColorFormatter = frontFormatter;
         }
     }
 
